@@ -10,7 +10,7 @@ import { QUARTER_CONFIG } from '../../config/quarterConfig';
 import { ROUTES_BY_PSM as STATIC_ROUTES_BY_PSM } from '../../config/routeConfig';
 import { STATUS_CATEGORIES } from '../../config/constants';
 import { isValidNumericInput } from '../../utils/validators.js';
-import { buscarValorAnterior as buscarValorAnteriorUtil } from '../../utils/valueUtils.js';
+import { buscarValorAnterior as buscarValorAnteriorUtil, getValorReduzido as getValorReduzidoUtil } from '../../utils/valueUtils.js';
 import { calcularNovoEstadoFibras } from '../../utils/fibraLogic.js';
 import { log } from '../../utils/logger';
 
@@ -35,6 +35,7 @@ export function useInputHandlers({
   setCurrentPageDrilldown,
   setShowStatusDrilldown,
   routesByPsm = STATIC_ROUTES_BY_PSM,
+  selectedWeek,
 }) {
 
   // ============================================================================
@@ -295,6 +296,14 @@ export function useInputHandlers({
 
     log('🔍 handleStatusClick:', { statusLabel, key, selectedOperator });
 
+    const SUBCATEGORIAS_REDUZIDAS = new Set([
+      'Reconhecidas',
+      'Dep. de Passagem de Cabo',
+      'Dep. de Licença',
+      'Dep. de Cutover',
+      `Fibras dependentes da ${selectedOperator}`,
+    ]);
+
     // Iterar sobre todas as rotas do PSM
     (routesByPsm[selectedOperator] || []).forEach(route => {
       // Buscar último valor não-zero do status para esta rota
@@ -311,8 +320,15 @@ export function useInputHandlers({
             lastWeek = week;
           }
         }
+      } else if (SUBCATEGORIAS_REDUZIDAS.has(key) && selectedWeek) {
+        // Subcategorias: usar valor reduzido pelas reparações distribuídas
+        lastValue = getValorReduzidoUtil(
+          data, distribuicaoReparacoes, selectedQuarter, selectedYear,
+          QUARTER_CONFIG, selectedOperator, selectedWeek, route, key
+        );
+        lastWeek = selectedWeek;
       } else {
-        // Para outros: buscar último valor não-zero
+        // Para outros (Indisponíveis, Transporte): buscar último valor não-zero
         for (let i = quarterLimits.end; i >= quarterLimits.start; i--) {
           const week = 'W' + i;
           const val = data[selectedOperator]?.[week]?.[route]?.[key];

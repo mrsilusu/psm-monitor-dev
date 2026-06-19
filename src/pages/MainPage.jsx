@@ -207,6 +207,7 @@ const MainPage = () => {
     setSelectedRota, setShowModal,
     setSelectedStatusDrilldown, setCurrentPageDrilldown, setShowStatusDrilldown,
     routesByPsm,
+    selectedWeek,
   });
 
   const handleLimparJustificativas = () => {
