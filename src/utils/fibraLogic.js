@@ -115,7 +115,7 @@ export const calcularNovoEstadoFibras = ({
         if (original === 0) original = buscarValorAnteriorFn(psm, week, route, campo);
 
         let descontoAcumulado = 0;
-        for (let w = trimestreAtual.start; w <= weekNum; w++) {
+        for (let w = trimestreAtual.start; w < weekNum; w++) {
           const semana = `W${w}`;
           descontoAcumulado += distribuicaoReparacoes[selectedYear]?.[psm]?.[semana]?.[route]?.[campo] || 0;
         }

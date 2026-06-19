@@ -102,78 +102,30 @@ export const useIntervencoes = ({
 
         if (totalReparadas === 0) continue;
 
-        let fibrasDependentes = null;
-        let transporte = null;
+        // Procurar o último valor de Indisponíveis até à semana actual
         let indisponiveis = null;
-
-        const depKey = 'Fibras dependentes da ' + selectedOperator;
-
         for (let i = checkWeek; i >= quarterLimits.start; i--) {
           const w = 'W' + i;
           const weekData = data[selectedOperator]?.[w]?.[route];
           if (!weekData) continue;
-
-          if (fibrasDependentes === null && depKey in weekData) {
-            const val = weekData[depKey];
-            if (val !== undefined && val !== null && val !== '') {
-              fibrasDependentes = parseInt(val) || 0;
-            }
-          }
-          if (transporte === null && 'Transporte' in weekData) {
-            const val = weekData['Transporte'];
-            if (val !== undefined && val !== null && val !== '') {
-              transporte = parseInt(val) || 0;
-            }
-          }
-          if (indisponiveis === null && 'Indisponíveis' in weekData) {
+          if ('Indisponíveis' in weekData) {
             const val = weekData['Indisponíveis'];
             if (val !== undefined && val !== null && val !== '') {
               indisponiveis = parseInt(val) || 0;
+              break;
             }
           }
         }
 
-        const foundAnyField = fibrasDependentes !== null || transporte !== null || indisponiveis !== null;
-        if (!foundAnyField) continue;
+        if (indisponiveis === null) continue;
 
-        const depFinal = fibrasDependentes !== null ? fibrasDependentes : 0;
-        const transpFinal = transporte !== null ? transporte : 0;
-        const indispFinal = indisponiveis !== null ? indisponiveis : 0;
+        // Rota normalizada quando Indisponíveis === Total Reparadas
+        const isNormalized = indisponiveis > 0 && indisponiveis === totalReparadas;
 
-        const condition1 = (depFinal === transpFinal && transpFinal === indispFinal && indispFinal === totalReparadas && totalReparadas > 0);
-        const condition2 = (depFinal === indispFinal && indispFinal === totalReparadas && totalReparadas > 0);
-        const condition3 = (transpFinal === indispFinal && indispFinal === totalReparadas && totalReparadas > 0);
-
-        let hadProblemsEarlier = false;
-        let totalIndisponiveisAntes = 0;
-
-        for (let i = quarterLimits.start; i < checkWeek; i++) {
-          const prevWeek = 'W' + i;
-          const prevData = data[selectedOperator]?.[prevWeek]?.[route];
-          if (prevData) {
-            const prevIndisp = parseInt(prevData['Indisponíveis']) || 0;
-            const prevTransp = parseInt(prevData['Transporte']) || 0;
-            const prevDep = parseInt(prevData[depKey]) || 0;
-            if (prevIndisp > 0) {
-              totalIndisponiveisAntes += prevIndisp;
-              hadProblemsEarlier = true;
-            }
-            if (prevTransp > 0 || prevDep > 0) hadProblemsEarlier = true;
-          }
-        }
-
-        const condition4 = (
-          hadProblemsEarlier &&
-          depFinal === 0 && transpFinal === 0 && indispFinal === 0 &&
-          totalReparadas === totalIndisponiveisAntes && totalReparadas > 0
-        );
-
-        if (condition1 || condition2 || condition3 || condition4) {
+        if (isNormalized) {
           wasNormalized = true;
           normalizationWeek = week;
-          normalizationCondition = condition1 ? 'Condição 1' :
-                                   condition2 ? 'Condição 2' :
-                                   condition3 ? 'Condição 3' : 'Condição 4';
+          normalizationCondition = 'Normalizada';
           break;
         }
       }

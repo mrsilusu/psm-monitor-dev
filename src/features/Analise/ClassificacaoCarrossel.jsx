@@ -137,23 +137,20 @@ const ClassificacaoCarrossel = ({
                       
                       const weekData = data[selectedOperator]?.[week]?.[rota];
                       if (weekData && weekNum >= parseInt(primeiraSemanaDados.substring(1))) {
-                        // Transporte e Indisponíveis: pegar último valor (não somar)
+                        // Transporte: pegar último valor (não somar)
                         const transporteVal = parseInt(weekData['Transporte']) || 0;
-                        const indisponiveisVal = parseInt(weekData['Indisponíveis']) || 0;
                         if (transporteVal > 0) transporte = transporteVal;
-                        if (indisponiveisVal > 0) indisponiveis = indisponiveisVal;
-                        
+
                         // Total Reparadas: SOMAR (acumulado) - ÚNICO QUE ACUMULA
                         totalReparadas += parseInt(weekData['Total Reparadas'], 10) || 0;
-                        
-                        // V5.08.3: Usar valores REDUZIDOS (com desconto aplicado)
-                        // Reconhecidas, Dependências e Fibras Dep.: pegar último valor REDUZIDO
+
+                        // Usar valores REDUZIDOS (com desconto aplicado)
                         const reconhecidasVal = getValorReduzido(selectedOperator, week, rota, 'Reconhecidas');
                         const depPassagemVal = getValorReduzido(selectedOperator, week, rota, 'Dep. de Passagem de Cabo');
                         const depLicencaVal = getValorReduzido(selectedOperator, week, rota, 'Dep. de Licença');
                         const depCutoverVal = getValorReduzido(selectedOperator, week, rota, 'Dep. de Cutover');
                         const fibrasDepVal = getValorReduzido(selectedOperator, week, rota, `Fibras dependentes da ${selectedOperator}`);
-                        
+
                         if (reconhecidasVal > 0) reconhecidas = reconhecidasVal;
                         if (depPassagemVal > 0) depPassagem = depPassagemVal;
                         if (depLicencaVal > 0) depLicenca = depLicencaVal;
@@ -161,7 +158,10 @@ const ClassificacaoCarrossel = ({
                         if (fibrasDepVal > 0) fibrasDep = fibrasDepVal;
                       }
                     }
-                    
+
+                    // Indisponíveis = soma das subcategorias já reduzidas pelas reparações distribuídas
+                    indisponiveis = reconhecidas + depPassagem + depLicenca + depCutover + fibrasDep;
+
                     return {
                       rota,
                       transporte,

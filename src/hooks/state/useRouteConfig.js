@@ -11,21 +11,39 @@ const safeArrayMap = (obj) => new Proxy(obj, {
   }
 });
 
-const buildMapsFromRows = (rows) => {
+const buildMapsFromRows = (rows, staticRoutesByPsm, staticRouteToProvince) => {
   const routesByPsm = {};
-  const routeToProvince = {};
+  const routeToProvince = { ...staticRouteToProvince };
   const operatorToProvinces = {};
 
+  // 1. Seed com todas as rotas estáticas (garante que nunca ficam ausentes)
+  Object.entries(staticRoutesByPsm).forEach(([psm, routes]) => {
+    routesByPsm[psm] = [...routes];
+    routes.forEach(r => {
+      const prov = staticRouteToProvince[r];
+      if (prov) {
+        if (!operatorToProvinces[psm]) operatorToProvinces[psm] = [];
+        if (!operatorToProvinces[psm].includes(prov)) operatorToProvinces[psm].push(prov);
+      }
+    });
+  });
+
+  // 2. Adicionar rotas dinâmicas que não existam nas estáticas
   rows.forEach(({ psm, route_name, province }) => {
     if (!routesByPsm[psm]) routesByPsm[psm] = [];
-    routesByPsm[psm].push(route_name);
-
-    routeToProvince[route_name] = province;
-
-    if (!operatorToProvinces[psm]) operatorToProvinces[psm] = [];
-    if (province && !operatorToProvinces[psm].includes(province)) {
-      operatorToProvinces[psm].push(province);
+    if (!routesByPsm[psm].includes(route_name)) {
+      routesByPsm[psm].push(route_name);
     }
+    if (province) {
+      routeToProvince[route_name] = province;
+      if (!operatorToProvinces[psm]) operatorToProvinces[psm] = [];
+      if (!operatorToProvinces[psm].includes(province)) operatorToProvinces[psm].push(province);
+    }
+  });
+
+  // 3. Ordenar cada PSM alfabeticamente (rotas dinâmicas integram-se na ordem correcta)
+  Object.keys(routesByPsm).forEach(psm => {
+    routesByPsm[psm].sort((a, b) => a.localeCompare(b, 'pt', { sensitivity: 'base' }));
   });
 
   return {
@@ -51,7 +69,7 @@ export const useRouteConfig = () => {
       await seedRoutesIfEmpty(STATIC_ROUTES_BY_PSM, STATIC_ROUTE_TO_PROVINCE);
       const { data, error } = await getActiveRoutes();
       if (error || !data || data.length === 0) throw new Error('empty');
-      const maps = buildMapsFromRows(data);
+      const maps = buildMapsFromRows(data, STATIC_ROUTES_BY_PSM, STATIC_ROUTE_TO_PROVINCE);
       setRoutes(data);
       setRoutesByPsm(maps.routesByPsm);
       setRouteToProvince(maps.routeToProvince);
