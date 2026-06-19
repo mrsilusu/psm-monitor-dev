@@ -151,7 +151,8 @@ const maps = buildMapsFromRows(data, STATIC_ROUTES_BY_PSM, STATIC_ROUTE_TO_PROVI
 - [ ] Verificar que a rota dinâmica não duplica uma estática com o mesmo nome
 
 ### Estado
-⬜ Pendente
+✅ Concluído — 2026-06-19
+`buildMapsFromRows` seed com rotas estáticas como base + adiciona dinâmicas por cima + ordena; a tabela de introdução manual usa `routesByPsm[selectedOperator]` que agora contém as 104 rotas estáticas.
 
 ---
 
@@ -182,7 +183,8 @@ Object.keys(routesByPsm).forEach(psm => {
 - [ ] Verificar que a ordenação é consistente entre cards, tabela de entrada e gráficos
 
 ### Estado
-⬜ Pendente
+✅ Concluído — 2026-06-19
+Incluído em B2: passo 3 de `buildMapsFromRows` ordena `routesByPsm[psm]` com `localeCompare('pt', {sensitivity:'base'})` após combinar estáticas + dinâmicas.
 
 ---
 
@@ -232,7 +234,9 @@ Isto garante que:
 - [ ] Verificar que o "Dados Gerais" (já correcto) continua a mostrar valores correctos
 
 ### Estado
-⬜ Pendente
+✅ Concluído — 2026-06-19
+Subcategorias calculadas com `getValorReduzido(selectedWeek)` fora do loop de acumulação.
+Raiz do bug anterior: padrão `if (val > 0) x = val` dentro do loop com variável `week` mantinha valores obsoletos quando a reparação reduzia a categoria a zero.
 
 ---
 

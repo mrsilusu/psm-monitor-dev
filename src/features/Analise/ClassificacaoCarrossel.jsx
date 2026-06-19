@@ -144,21 +144,16 @@ const ClassificacaoCarrossel = ({
                         // Total Reparadas: SOMAR (acumulado) - ÚNICO QUE ACUMULA
                         totalReparadas += parseInt(weekData['Total Reparadas'], 10) || 0;
 
-                        // Usar valores REDUZIDOS (com desconto aplicado)
-                        const reconhecidasVal = getValorReduzido(selectedOperator, week, rota, 'Reconhecidas');
-                        const depPassagemVal = getValorReduzido(selectedOperator, week, rota, 'Dep. de Passagem de Cabo');
-                        const depLicencaVal = getValorReduzido(selectedOperator, week, rota, 'Dep. de Licença');
-                        const depCutoverVal = getValorReduzido(selectedOperator, week, rota, 'Dep. de Cutover');
-                        const fibrasDepVal = getValorReduzido(selectedOperator, week, rota, `Fibras dependentes da ${selectedOperator}`);
-
-                        if (reconhecidasVal > 0) reconhecidas = reconhecidasVal;
-                        if (depPassagemVal > 0) depPassagem = depPassagemVal;
-                        if (depLicencaVal > 0) depLicenca = depLicencaVal;
-                        if (depCutoverVal > 0) depCutover = depCutoverVal;
-                        if (fibrasDepVal > 0) fibrasDep = fibrasDepVal;
                       }
                     }
 
+                    // Subcategorias: usar selectedWeek para que getValorReduzido acumule o desconto
+                    // correcto até essa semana — incluindo quando o valor fica reduzido a zero
+                    reconhecidas = getValorReduzido(selectedOperator, selectedWeek, rota, 'Reconhecidas');
+                    depPassagem = getValorReduzido(selectedOperator, selectedWeek, rota, 'Dep. de Passagem de Cabo');
+                    depLicenca = getValorReduzido(selectedOperator, selectedWeek, rota, 'Dep. de Licença');
+                    depCutover = getValorReduzido(selectedOperator, selectedWeek, rota, 'Dep. de Cutover');
+                    fibrasDep = getValorReduzido(selectedOperator, selectedWeek, rota, `Fibras dependentes da ${selectedOperator}`);
                     // Indisponíveis = soma das subcategorias já reduzidas pelas reparações distribuídas
                     indisponiveis = reconhecidas + depPassagem + depLicenca + depCutover + fibrasDep;
 
