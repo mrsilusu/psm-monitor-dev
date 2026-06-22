@@ -713,31 +713,51 @@ const ClassificacaoCarrossel = ({
                       </div>
                       
                       {/* Paginação interna por categoria */}
-                      {totalPages > 1 && setCurrentPage && (
-                        <div className="flex items-center justify-center gap-4 mb-3">
-                          <button
-                            onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
-                            disabled={currentPage === 0}
-                            className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition-colors"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                          </button>
-                          <span className="text-xs font-semibold text-gray-600">
-                            Página {currentPage + 1} / {totalPages}
-                          </span>
-                          <button
-                            onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
-                            disabled={currentPage === totalPages - 1}
-                            className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition-colors"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
+                      {totalPages > 1 && setCurrentPage && (() => {
+                        const pgBtn = borderColor === 'red'
+                          ? 'bg-red-500 hover:bg-red-600 text-white disabled:opacity-30'
+                          : borderColor === 'green'
+                          ? 'bg-green-500 hover:bg-green-600 text-white disabled:opacity-30'
+                          : 'bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-30';
+                        const pgBg = borderColor === 'red'
+                          ? 'bg-red-50 border border-red-300'
+                          : borderColor === 'green'
+                          ? 'bg-green-50 border border-green-300'
+                          : 'bg-blue-50 border border-blue-300';
+                        const pgText = borderColor === 'red'
+                          ? 'text-red-700'
+                          : borderColor === 'green'
+                          ? 'text-green-700'
+                          : 'text-blue-700';
+                        return (
+                          <div className={`flex items-center justify-center gap-4 mb-3 py-2 px-4 rounded-lg ${pgBg}`}>
+                            <button
+                              onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+                              disabled={currentPage === 0}
+                              className={`p-1.5 rounded-full transition-colors ${pgBtn}`}
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                              </svg>
+                            </button>
+                            <span className={`text-sm font-bold ${pgText}`}>
+                              Página {currentPage + 1} / {totalPages}
+                              <span className="font-normal text-xs ml-2 opacity-70">
+                                ({currentPage * ROUTES_PER_PAGE + 1}–{Math.min((currentPage + 1) * ROUTES_PER_PAGE, allRoutes.length)} de {allRoutes.length} rotas)
+                              </span>
+                            </span>
+                            <button
+                              onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
+                              disabled={currentPage === totalPages - 1}
+                              className={`p-1.5 rounded-full transition-colors ${pgBtn}`}
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </button>
+                          </div>
+                        );
+                      })()}
 
                       {/* SEM overflow-x-auto - Tudo cabe na largura fixa */}
                       <div className="flex justify-center">
