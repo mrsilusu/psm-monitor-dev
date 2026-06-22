@@ -131,10 +131,16 @@ const ClassificacaoCarrossel = ({
                     let depCutover = 0;
                     let fibrasDep = 0;
                     
+                    let reconhecidasOrig = 0;
+                    let depPassagemOrig = 0;
+                    let depLicencaOrig = 0;
+                    let depCutoverOrig = 0;
+                    let fibrasDepOrig = 0;
+
                     for (let week of quarterWeeks) {
                       const weekNum = parseInt(week.substring(1));
                       if (weekNum > weekNumSelecionada) break; // Parar na semana selecionada
-                      
+
                       const weekData = data[selectedOperator]?.[week]?.[rota];
                       if (weekData && weekNum >= parseInt(primeiraSemanaDados.substring(1))) {
                         // Transporte: pegar último valor (não somar)
@@ -144,18 +150,28 @@ const ClassificacaoCarrossel = ({
                         // Total Reparadas: SOMAR (acumulado) - ÚNICO QUE ACUMULA
                         totalReparadas += parseInt(weekData['Total Reparadas'], 10) || 0;
 
+                        // Subcategorias originais: último valor não-zero (para Indisponíveis fixo)
+                        const reconhVal = parseInt(weekData['Reconhecidas']) || 0;
+                        const depPassVal = parseInt(weekData['Dep. de Passagem de Cabo']) || 0;
+                        const depLicVal = parseInt(weekData['Dep. de Licença']) || 0;
+                        const depCutVal = parseInt(weekData['Dep. de Cutover']) || 0;
+                        const fibrasVal = parseInt(weekData[`Fibras dependentes da ${selectedOperator}`]) || 0;
+                        if (reconhVal > 0) reconhecidasOrig = reconhVal;
+                        if (depPassVal > 0) depPassagemOrig = depPassVal;
+                        if (depLicVal > 0) depLicencaOrig = depLicVal;
+                        if (depCutVal > 0) depCutoverOrig = depCutVal;
+                        if (fibrasVal > 0) fibrasDepOrig = fibrasVal;
                       }
                     }
 
-                    // Subcategorias: usar selectedWeek para que getValorReduzido acumule o desconto
-                    // correcto até essa semana — incluindo quando o valor fica reduzido a zero
+                    // Subcategorias reduzidas: para as barras de detalhe
                     reconhecidas = getValorReduzido(selectedOperator, selectedWeek, rota, 'Reconhecidas');
                     depPassagem = getValorReduzido(selectedOperator, selectedWeek, rota, 'Dep. de Passagem de Cabo');
                     depLicenca = getValorReduzido(selectedOperator, selectedWeek, rota, 'Dep. de Licença');
                     depCutover = getValorReduzido(selectedOperator, selectedWeek, rota, 'Dep. de Cutover');
                     fibrasDep = getValorReduzido(selectedOperator, selectedWeek, rota, `Fibras dependentes da ${selectedOperator}`);
-                    // Indisponíveis = soma das subcategorias já reduzidas pelas reparações distribuídas
-                    indisponiveis = reconhecidas + depPassagem + depLicenca + depCutover + fibrasDep;
+                    // Indisponíveis = soma das subcategorias ORIGINAIS (não reduzido pelas reparações)
+                    indisponiveis = reconhecidasOrig + depPassagemOrig + depLicencaOrig + depCutoverOrig + fibrasDepOrig;
 
                     return {
                       rota,
@@ -418,9 +434,8 @@ const ClassificacaoCarrossel = ({
                     fibrasDep: routes.reduce((sum, r) => sum + r.fibrasDep, 0)
                   };
                   
-                  // V5.08.6: Indisponíveis = soma das subcategorias
-                  totals.indisponiveis = totals.reconhecidas + totals.depPassagem + 
-                                         totals.depLicenca + totals.depCutover + totals.fibrasDep;
+                  // Indisponíveis: valor original por rota (não reduzido pelas reparações)
+                  totals.indisponiveis = routes.reduce((sum, r) => sum + r.indisponiveis, 0);
                   
                   // V5.08.7: Total para percentagem = APENAS Reparadas + Indisponíveis
                   // Transporte NÃO entra no cálculo de percentagem (isolado)
