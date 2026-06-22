@@ -97,7 +97,7 @@ const AcompanhamentoTable = ({
                   >
                     <table className="w-full border-collapse" style={{ tableLayout: 'fixed' }}>
                       <colgroup>
-                        <col style={{ width: '240px' }} />
+                        <col style={{ width: '340px' }} />
                         <col style={{ width: '72px' }} />
                         <col style={{ width: '64px' }} />
                         <col style={{ width: '58px' }} />
