@@ -211,6 +211,21 @@ const MainPage = () => {
     selectedWeek,
   });
 
+  const handleAcompanhamentoChange = (rowKey, field, value) => {
+    setJustificativas(prev => {
+      const record = prev[rowKey];
+      if (!record) return prev;
+      if (field === 'seccao') {
+        const newKey = `${record.psm}_${value}`;
+        const updated = { ...prev };
+        delete updated[rowKey];
+        updated[newKey] = { ...record, seccao: value };
+        return updated;
+      }
+      return { ...prev, [rowKey]: { ...record, [field]: value } };
+    });
+  };
+
   const handleLimparJustificativas = () => {
     const countFiltered = Object.values(justificativas).filter(j =>
       j.psm === selectedOperator && j.quarter === selectedQuarter
@@ -466,6 +481,7 @@ const MainPage = () => {
             setManualDataExpanded={setManualDataExpanded}
             handleBlurTotalReparadas={handleBlurTotalReparadas}
             handleLimparJustificativas={handleLimparJustificativas}
+            handleAcompanhamentoChange={handleAcompanhamentoChange}
             quarterAnterior={quarterAnterior}
           />
         </div>

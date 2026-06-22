@@ -17,6 +17,7 @@ const AcompanhamentoTable = ({
   setManualDataExpanded,
   handleBlurTotalReparadas,
   handleLimparJustificativas,
+  handleAcompanhamentoChange,
   quarterAnterior,
   routesByPsm = STATIC_ROUTES_BY_PSM,
 }) => {
@@ -106,36 +107,76 @@ const AcompanhamentoTable = ({
                         </tr>
                       </thead>
                       <tbody>
-                        {currentDataAcomp.map((row, index) => (
-                          <tr key={index} className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 transition-colors`}>
-                            <td className="px-2 py-1.5 text-xs font-semibold text-gray-800 border-r border-gray-200 sticky left-0 bg-inherit z-10">
-                              {row.seccao}
+                        {currentDataAcomp.map((row, index) => {
+                          const deltaNum = parseInt(row.deltaIndisponibilidade) || 0;
+                          const deltaPositive = row.deltaIndisponibilidade.startsWith('+');
+                          const deltaZero = row.deltaIndisponibilidade === '0';
+                          return (
+                          <tr key={row._key || index} className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 transition-colors`}>
+                            <td className="px-1 py-1 border-r border-gray-200 sticky left-0 bg-inherit z-10 min-w-[120px]">
+                              <input
+                                type="text"
+                                defaultValue={row.seccao}
+                                onBlur={e => handleAcompanhamentoChange?.(row._key, 'seccao', e.target.value.trim())}
+                                className="w-full text-xs font-semibold text-gray-800 bg-transparent border border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none focus:bg-white rounded px-1 py-0.5 transition-colors"
+                              />
                             </td>
-                            <td className="px-2 py-1.5 text-center text-xs text-gray-700 border-r border-gray-200">
-                              {row.regiao}
+                            <td className="px-1 py-1 border-r border-gray-200 min-w-[80px]">
+                              <input
+                                type="text"
+                                defaultValue={row.regiao}
+                                onBlur={e => handleAcompanhamentoChange?.(row._key, 'regiao', e.target.value.trim())}
+                                className="w-full text-center text-xs text-gray-700 bg-transparent border border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none focus:bg-white rounded px-1 py-0.5 transition-colors"
+                              />
                             </td>
-                            <td className="px-2 py-1.5 text-center text-xs font-bold text-gray-800 border-r border-gray-200 bg-slate-50">
-                              {row.transporteQ2}
+                            <td className="px-1 py-1 text-center border-r border-gray-200 bg-slate-50 min-w-[60px]">
+                              <input
+                                type="text"
+                                defaultValue={row.transporteQ2}
+                                onBlur={e => handleAcompanhamentoChange?.(row._key, 'transporte', parseInt(e.target.value) || 0)}
+                                className="w-full text-center text-xs font-bold text-gray-800 bg-transparent border border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none focus:bg-white rounded px-1 py-0.5 transition-colors"
+                                maxLength="6"
+                              />
                             </td>
-                            <td className="px-2 py-1.5 text-center text-xs font-bold text-red-700 border-r border-gray-200 bg-red-50">
-                              {row.indisponiveis}
+                            <td className="px-1 py-1 text-center border-r border-gray-200 bg-red-50 min-w-[60px]">
+                              <input
+                                type="text"
+                                defaultValue={row.indisponiveis}
+                                onBlur={e => handleAcompanhamentoChange?.(row._key, 'indisponiveis', parseInt(e.target.value) || 0)}
+                                className="w-full text-center text-xs font-bold text-red-700 bg-transparent border border-transparent hover:border-red-300 focus:border-red-400 focus:outline-none focus:bg-white rounded px-1 py-0.5 transition-colors"
+                                maxLength="6"
+                              />
                             </td>
-                            <td className="px-2 py-1.5 text-center text-xs font-bold border-r border-gray-200">
-                              <span className={`px-2 py-0.5 rounded text-xs ${
-                                row.deltaIndisponibilidade.startsWith('+') 
-                                  ? 'bg-red-100 text-red-700' 
-                                  : row.deltaIndisponibilidade === '0' 
-                                    ? 'bg-gray-100 text-gray-700' 
-                                    : 'bg-green-100 text-green-700'
-                              }`}>
-                                {row.deltaIndisponibilidade}
-                              </span>
+                            <td className="px-1 py-1 text-center border-r border-gray-200 min-w-[60px]">
+                              <input
+                                type="text"
+                                defaultValue={row.deltaIndisponibilidade}
+                                onBlur={e => {
+                                  const raw = e.target.value.trim().replace(/^\+/, '');
+                                  handleAcompanhamentoChange?.(row._key, 'delta', parseInt(raw) || 0);
+                                }}
+                                className={`w-full text-center text-xs font-bold rounded px-1 py-0.5 border border-transparent focus:outline-none focus:bg-white transition-colors ${
+                                  deltaPositive
+                                    ? 'text-red-700 hover:border-red-300 focus:border-red-400'
+                                    : deltaZero
+                                      ? 'text-gray-700 hover:border-gray-300 focus:border-gray-400'
+                                      : 'text-green-700 hover:border-green-300 focus:border-green-400'
+                                }`}
+                                maxLength="6"
+                              />
                             </td>
-                            <td className="px-2 py-1.5 text-xs text-gray-600 leading-snug max-w-lg">
-                              {row.justificativa}
+                            <td className="px-1 py-1 max-w-lg">
+                              <input
+                                type="text"
+                                defaultValue={row.justificativa}
+                                onBlur={e => handleAcompanhamentoChange?.(row._key, 'justificativa', e.target.value.trim())}
+                                className="w-full text-xs text-gray-600 bg-transparent border border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none focus:bg-white rounded px-1 py-0.5 transition-colors"
+                                placeholder="Sem justificativa"
+                              />
                             </td>
                           </tr>
-                        ))}
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

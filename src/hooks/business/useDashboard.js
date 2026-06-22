@@ -306,10 +306,11 @@ export const useDashboard = ({
   const acompanhamentoData = useMemo(() => {
     return Object.entries(justificativas)
       .filter(([, just]) => just.psm === selectedOperator && just.quarter === selectedQuarter)
-      .map(([, just]) => {
+      .map(([key, just]) => {
         const deltaValue = just.delta || 0;
         const deltaStr = deltaValue > 0 ? `+${deltaValue}` : deltaValue === 0 ? '0' : `${deltaValue}`;
         return {
+          _key: key,
           seccao: just.seccao,
           regiao: just.regiao || '',
           transporteQ2: just.transporte || 0,
