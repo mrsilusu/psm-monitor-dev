@@ -95,25 +95,32 @@ const AcompanhamentoTable = ({
                   className="overflow-auto border border-gray-200 rounded-lg"
                     style={{ maxHeight: acompanhamentoData.length > 7 ? '420px' : 'none' }}
                   >
-                    <table className="w-full border-collapse">
+                    <table className="w-full border-collapse" style={{ tableLayout: 'fixed' }}>
+                      <colgroup>
+                        <col style={{ width: '130px' }} />
+                        <col style={{ width: '72px' }} />
+                        <col style={{ width: '64px' }} />
+                        <col style={{ width: '58px' }} />
+                        <col style={{ width: '56px' }} />
+                        <col />
+                      </colgroup>
                       <thead className="sticky top-0 z-20">
                         <tr className="bg-yellow-100 border-b-2 border-yellow-300">
                           <th className="px-2 py-1.5 text-left text-xs font-bold text-gray-800 border-r border-yellow-200 sticky left-0 bg-yellow-100 z-30">Secção</th>
                           <th className="px-2 py-1.5 text-center text-xs font-bold text-gray-800 border-r border-yellow-200">Região</th>
-                          <th className="px-2 py-1.5 text-center text-xs font-bold text-gray-800 border-r border-yellow-200 bg-slate-100">Transp. {quarterAnterior.label}</th>
-                          <th className="px-2 py-1.5 text-center text-xs font-bold text-gray-800 border-r border-yellow-200 bg-red-100">Indisp.</th>
-                          <th className="px-2 py-1.5 text-center text-xs font-bold text-gray-800 border-r border-yellow-200">Delta</th>
+                          <th className="px-1 py-1.5 text-center text-xs font-bold text-gray-800 border-r border-yellow-200 bg-slate-100">Transp. {quarterAnterior.label}</th>
+                          <th className="px-1 py-1.5 text-center text-xs font-bold text-gray-800 border-r border-yellow-200 bg-red-100">Indisp.</th>
+                          <th className="px-1 py-1.5 text-center text-xs font-bold text-gray-800 border-r border-yellow-200">Delta</th>
                           <th className="px-2 py-1.5 text-left text-xs font-bold text-gray-800">Justificativa</th>
                         </tr>
                       </thead>
                       <tbody>
                         {currentDataAcomp.map((row, index) => {
-                          const deltaNum = parseInt(row.deltaIndisponibilidade) || 0;
                           const deltaPositive = row.deltaIndisponibilidade.startsWith('+');
                           const deltaZero = row.deltaIndisponibilidade === '0';
                           return (
                           <tr key={row._key || index} className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 transition-colors`}>
-                            <td className="px-1 py-1 border-r border-gray-200 sticky left-0 bg-inherit z-10 min-w-[120px]">
+                            <td className="px-1 py-1 border-r border-gray-200 sticky left-0 bg-inherit z-10">
                               <input
                                 type="text"
                                 defaultValue={row.seccao}
@@ -121,7 +128,7 @@ const AcompanhamentoTable = ({
                                 className="w-full text-xs font-semibold text-gray-800 bg-transparent border border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none focus:bg-white rounded px-1 py-0.5 transition-colors"
                               />
                             </td>
-                            <td className="px-1 py-1 border-r border-gray-200 min-w-[80px]">
+                            <td className="px-1 py-1 border-r border-gray-200">
                               <input
                                 type="text"
                                 defaultValue={row.regiao}
@@ -129,7 +136,7 @@ const AcompanhamentoTable = ({
                                 className="w-full text-center text-xs text-gray-700 bg-transparent border border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none focus:bg-white rounded px-1 py-0.5 transition-colors"
                               />
                             </td>
-                            <td className="px-1 py-1 text-center border-r border-gray-200 bg-slate-50 min-w-[60px]">
+                            <td className="px-1 py-1 text-center border-r border-gray-200 bg-slate-50">
                               <input
                                 type="text"
                                 defaultValue={row.transporteQ2}
@@ -138,7 +145,7 @@ const AcompanhamentoTable = ({
                                 maxLength="6"
                               />
                             </td>
-                            <td className="px-1 py-1 text-center border-r border-gray-200 bg-red-50 min-w-[60px]">
+                            <td className="px-1 py-1 text-center border-r border-gray-200 bg-red-50">
                               <input
                                 type="text"
                                 defaultValue={row.indisponiveis}
@@ -147,7 +154,7 @@ const AcompanhamentoTable = ({
                                 maxLength="6"
                               />
                             </td>
-                            <td className="px-1 py-1 text-center border-r border-gray-200 min-w-[60px]">
+                            <td className="px-1 py-1 text-center border-r border-gray-200">
                               <input
                                 type="text"
                                 defaultValue={row.deltaIndisponibilidade}
@@ -165,12 +172,22 @@ const AcompanhamentoTable = ({
                                 maxLength="6"
                               />
                             </td>
-                            <td className="px-1 py-1 max-w-lg">
-                              <input
-                                type="text"
+                            <td className="px-1 py-1">
+                              <textarea
+                                ref={el => {
+                                  if (el) {
+                                    el.style.height = 'auto';
+                                    el.style.height = el.scrollHeight + 'px';
+                                  }
+                                }}
                                 defaultValue={row.justificativa}
+                                rows={1}
+                                onInput={e => {
+                                  e.target.style.height = 'auto';
+                                  e.target.style.height = e.target.scrollHeight + 'px';
+                                }}
                                 onBlur={e => handleAcompanhamentoChange?.(row._key, 'justificativa', e.target.value.trim())}
-                                className="w-full text-xs text-gray-600 bg-transparent border border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none focus:bg-white rounded px-1 py-0.5 transition-colors"
+                                className="w-full text-xs text-gray-600 bg-transparent border border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none focus:bg-white rounded px-1 py-0.5 transition-colors resize-none overflow-hidden leading-snug"
                                 placeholder="Sem justificativa"
                               />
                             </td>
