@@ -233,7 +233,7 @@ export const useDashboard = ({
 
     const executiveDashboard = {
       transporteQ2: { label: transporteLabel, value: stats.transporteSum, color: 'bg-slate-700', textColor: 'text-white' },
-      indisponiveis: { label: 'Indisponíveis', value: statsOriginais.indisponiveisSum, color: 'bg-red-500', textColor: 'text-white' },
+      indisponiveis: { label: 'Indisponíveis', value: stats.indisponiveisSum, color: 'bg-red-500', textColor: 'text-white' },
       totalReparadas: { label: 'Total Reparadas', value: stats.totalReparadasSum, color: 'bg-green-500', textColor: 'text-white' },
       reconhecidas: { label: 'Reconhecidas', value: stats.reconhecidasSum, color: 'bg-cyan-500', textColor: 'text-white' },
       depPassagens: { label: 'Dep. Passagens', value: stats.depPassagensSum, color: 'bg-blue-500', textColor: 'text-white' },
