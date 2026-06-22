@@ -594,14 +594,14 @@ Gerado por: PSM Monitor v3.42.03
                               // Deep clone para forçar re-render
                               const novasTestadas = JSON.parse(JSON.stringify(rotasTestadas));
                               const novasValidadas = JSON.parse(JSON.stringify(rotasValidadas));
-                              
+
                               // Limpar APENAS esta semana
-                              if (novasTestadas[selectedOperator]?.[selectedWeek]) {
-                                delete novasTestadas[selectedOperator][selectedWeek];
+                              if (novasTestadas[selectedYear]?.[selectedOperator]?.[selectedWeek]) {
+                                delete novasTestadas[selectedYear][selectedOperator][selectedWeek];
                                 log(`🗑️ Testadas da semana ${selectedWeek} deletadas`);
                               }
-                              if (novasValidadas[selectedOperator]?.[selectedWeek]) {
-                                delete novasValidadas[selectedOperator][selectedWeek];
+                              if (novasValidadas[selectedYear]?.[selectedOperator]?.[selectedWeek]) {
+                                delete novasValidadas[selectedYear][selectedOperator][selectedWeek];
                                 log(`🗑️ Validadas da semana ${selectedWeek} deletadas`);
                               }
                               
@@ -669,34 +669,35 @@ Gerado por: PSM Monitor v3.42.03
                                     <button
                                       onClick={() => {
                                         const novas = { ...rotasTestadas };
-                                        if (!novas[selectedOperator]) novas[selectedOperator] = {};
-                                        if (!novas[selectedOperator][selectedWeek]) novas[selectedOperator][selectedWeek] = {};
-                                        
+                                        if (!novas[selectedYear]) novas[selectedYear] = {};
+                                        if (!novas[selectedYear][selectedOperator]) novas[selectedYear][selectedOperator] = {};
+                                        if (!novas[selectedYear][selectedOperator][selectedWeek]) novas[selectedYear][selectedOperator][selectedWeek] = {};
+
                                         if (testada) {
                                           // Desmarcar APENAS desta semana
-                                          delete novas[selectedOperator][selectedWeek][rota];
-                                          
+                                          delete novas[selectedYear][selectedOperator][selectedWeek][rota];
+
                                           // Limpar semana vazia
-                                          if (Object.keys(novas[selectedOperator][selectedWeek]).length === 0) {
-                                            delete novas[selectedOperator][selectedWeek];
+                                          if (Object.keys(novas[selectedYear][selectedOperator][selectedWeek]).length === 0) {
+                                            delete novas[selectedYear][selectedOperator][selectedWeek];
                                           }
-                                          
+
                                           // Desmarcar validada desta semana
                                           const novasVal = { ...rotasValidadas };
-                                          if (novasVal[selectedOperator]?.[selectedWeek]) {
-                                            delete novasVal[selectedOperator][selectedWeek][rota];
-                                            if (Object.keys(novasVal[selectedOperator][selectedWeek]).length === 0) {
-                                              delete novasVal[selectedOperator][selectedWeek];
+                                          if (novasVal[selectedYear]?.[selectedOperator]?.[selectedWeek]) {
+                                            delete novasVal[selectedYear][selectedOperator][selectedWeek][rota];
+                                            if (Object.keys(novasVal[selectedYear][selectedOperator][selectedWeek]).length === 0) {
+                                              delete novasVal[selectedYear][selectedOperator][selectedWeek];
                                             }
                                           }
                                           setRotasValidadas(novasVal);
                                         } else {
                                           // Marcar APENAS nesta semana
-                                          novas[selectedOperator][selectedWeek][rota] = {
+                                          novas[selectedYear][selectedOperator][selectedWeek][rota] = {
                                             testada: true
                                           };
                                         }
-                                        
+
                                         setRotasTestadas(novas);
                                         log(`🧪 ${rota} ${testada ? 'desmarcada' : 'marcada'} em ${selectedWeek}`);
                                       }}
@@ -741,26 +742,27 @@ Gerado por: PSM Monitor v3.42.03
                                           alert(`⚠️ A rota precisa estar marcada como Testada em ${selectedWeek} primeiro!`);
                                           return;
                                         }
-                                        
+
                                         const novas = { ...rotasValidadas };
-                                        if (!novas[selectedOperator]) novas[selectedOperator] = {};
-                                        if (!novas[selectedOperator][selectedWeek]) novas[selectedOperator][selectedWeek] = {};
-                                        
+                                        if (!novas[selectedYear]) novas[selectedYear] = {};
+                                        if (!novas[selectedYear][selectedOperator]) novas[selectedYear][selectedOperator] = {};
+                                        if (!novas[selectedYear][selectedOperator][selectedWeek]) novas[selectedYear][selectedOperator][selectedWeek] = {};
+
                                         if (validada) {
                                           // Desmarcar APENAS desta semana
-                                          delete novas[selectedOperator][selectedWeek][rota];
-                                          
+                                          delete novas[selectedYear][selectedOperator][selectedWeek][rota];
+
                                           // Limpar semana vazia
-                                          if (Object.keys(novas[selectedOperator][selectedWeek]).length === 0) {
-                                            delete novas[selectedOperator][selectedWeek];
+                                          if (Object.keys(novas[selectedYear][selectedOperator][selectedWeek]).length === 0) {
+                                            delete novas[selectedYear][selectedOperator][selectedWeek];
                                           }
                                         } else {
                                           // Marcar APENAS nesta semana
-                                          novas[selectedOperator][selectedWeek][rota] = {
+                                          novas[selectedYear][selectedOperator][selectedWeek][rota] = {
                                             validada: true
                                           };
                                         }
-                                        
+
                                         setRotasValidadas(novas);
                                         log(`✅ ${rota} ${validada ? 'desmarcada' : 'marcada'} em ${selectedWeek}`);
                                       }}
