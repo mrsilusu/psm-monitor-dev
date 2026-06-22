@@ -230,7 +230,7 @@ export function useInputHandlers({
         for (let i = quarterLimits.end; i >= quarterLimits.start; i--) {
           const week = 'W' + i;
           const val = data[selectedOperator]?.[week]?.[rota]?.[key];
-          if (val !== undefined && val !== 0) {
+          if (val !== undefined && val !== 0 && val !== '') {
             lastValue = val;
             lastWeek = week;
             break;
@@ -327,12 +327,29 @@ export function useInputHandlers({
           QUARTER_CONFIG, selectedOperator, selectedWeek, route, key
         );
         lastWeek = selectedWeek;
+      } else if (key === 'Indisponíveis') {
+        // Indisponíveis = soma das subcategorias originais (último valor não-zero de cada)
+        const fibrasKey = `Fibras dependentes da ${selectedOperator}`;
+        const subcats = ['Reconhecidas', 'Dep. de Passagem de Cabo', 'Dep. de Licença', 'Dep. de Cutover', fibrasKey];
+        let somaSubcats = 0;
+        subcats.forEach(subcat => {
+          for (let i = quarterLimits.end; i >= quarterLimits.start; i--) {
+            const week = 'W' + i;
+            const val = data[selectedOperator]?.[week]?.[route]?.[subcat];
+            if (val !== undefined && val !== '' && val !== 0) {
+              somaSubcats += parseInt(val) || 0;
+              break;
+            }
+          }
+        });
+        lastValue = somaSubcats;
+        lastWeek = selectedWeek;
       } else {
-        // Para outros (Indisponíveis, Transporte): buscar último valor não-zero
+        // Para outros (Transporte): buscar último valor não-zero
         for (let i = quarterLimits.end; i >= quarterLimits.start; i--) {
           const week = 'W' + i;
           const val = data[selectedOperator]?.[week]?.[route]?.[key];
-          if (val !== undefined && val !== 0) {
+          if (val !== undefined && val !== 0 && val !== '') {
             lastValue = parseInt(val) || 0;
             lastWeek = week;
             break;

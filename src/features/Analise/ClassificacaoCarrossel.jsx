@@ -39,11 +39,17 @@ const ClassificacaoCarrossel = ({
   const [pageDegradadas, setPageDegradadas] = useState(0);
   const [pageComGanho, setPageComGanho] = useState(0);
   const [pageEstaveis, setPageEstaveis] = useState(0);
+  const [pageResumoDegradadas, setPageResumoDegradadas] = useState(0);
+  const [pageResumoComGanho, setPageResumoComGanho] = useState(0);
+  const [pageResumoEstaveis, setPageResumoEstaveis] = useState(0);
 
   useEffect(() => {
     setPageDegradadas(0);
     setPageComGanho(0);
     setPageEstaveis(0);
+    setPageResumoDegradadas(0);
+    setPageResumoComGanho(0);
+    setPageResumoEstaveis(0);
   }, [selectedOperator, selectedProvince, selectedQuarter, selectedWeek]);
 
   const goToNextGraphClassificacao = () => setCurrentGraphClassificacao((prev) => (prev + 1) % 3);
@@ -286,16 +292,20 @@ const ClassificacaoCarrossel = ({
                 };
                 
                 // Função para renderizar gráfico com ROTAS INDIVIDUAIS (nome completo, barras alinhadas)
-                const renderCompactRoutesChart = (routes, title, borderColor, maxNameWidth) => {
+                const renderCompactRoutesChart = (allRoutes, title, borderColor, maxNameWidth, currentPage = 0, setCurrentPage = null) => {
+                  const ROUTES_PER_PAGE = 15;
+                  const totalPages = Math.ceil((allRoutes?.length || 0) / ROUTES_PER_PAGE);
+                  const routes = (allRoutes || []).slice(currentPage * ROUTES_PER_PAGE, (currentPage + 1) * ROUTES_PER_PAGE);
+
                   const containerClass = borderColor === 'red' ? 'bg-white rounded-lg border-2 border-red-400 p-3 shadow-lg h-full flex flex-col overflow-hidden' :
                                         borderColor === 'green' ? 'bg-white rounded-lg border-2 border-green-400 p-3 shadow-lg h-full flex flex-col overflow-hidden' :
                                         'bg-white rounded-lg border-2 border-blue-400 p-3 shadow-lg h-full flex flex-col overflow-hidden';
-                  
+
                   const headerClass = borderColor === 'red' ? 'bg-gradient-to-r from-red-50 to-red-100 -mx-3 -mt-3 px-3 py-2 mb-2 border-b-2 border-red-300' :
                                      borderColor === 'green' ? 'bg-gradient-to-r from-green-50 to-green-100 -mx-3 -mt-3 px-3 py-2 mb-2 border-b-2 border-green-300' :
                                      'bg-gradient-to-r from-blue-50 to-blue-100 -mx-3 -mt-3 px-3 py-2 mb-2 border-b-2 border-blue-300';
-                  
-                  if (!routes || routes.length === 0) {
+
+                  if (!allRoutes || allRoutes.length === 0) {
                     return (
                       <div className={containerClass}>
                         <div className={headerClass}>
@@ -320,8 +330,36 @@ const ClassificacaoCarrossel = ({
                       <div className={headerClass}>
                         <h3 className="text-center text-xs font-bold text-gray-800">{title}</h3>
                       </div>
-                      <p className="text-center text-[10px] font-semibold mb-2">Total: {routes.length} rotas</p>
-                      
+                      <p className="text-center text-[10px] font-semibold mb-1">Total: {allRoutes.length} rotas</p>
+
+                      {/* Paginação interna Ver Resumo */}
+                      {totalPages > 1 && setCurrentPage && (() => {
+                        const pgBtn = borderColor === 'red'
+                          ? 'bg-red-500 hover:bg-red-600 text-white disabled:opacity-30'
+                          : borderColor === 'green'
+                          ? 'bg-green-500 hover:bg-green-600 text-white disabled:opacity-30'
+                          : 'bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-30';
+                        const pgBg = borderColor === 'red'
+                          ? 'bg-red-50 border border-red-300'
+                          : borderColor === 'green'
+                          ? 'bg-green-50 border border-green-300'
+                          : 'bg-blue-50 border border-blue-300';
+                        const pgText = borderColor === 'red' ? 'text-red-700' : borderColor === 'green' ? 'text-green-700' : 'text-blue-700';
+                        return (
+                          <div className={`flex items-center justify-center gap-2 mb-2 py-1 px-3 rounded-lg ${pgBg}`}>
+                            <button onClick={() => setCurrentPage(p => Math.max(0, p - 1))} disabled={currentPage === 0} className={`p-1 rounded-full transition-colors ${pgBtn}`}>
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                            </button>
+                            <span className={`text-[10px] font-bold ${pgText}`}>
+                              {currentPage + 1}/{totalPages} ({currentPage * ROUTES_PER_PAGE + 1}–{Math.min((currentPage + 1) * ROUTES_PER_PAGE, allRoutes.length)})
+                            </span>
+                            <button onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))} disabled={currentPage === totalPages - 1} className={`p-1 rounded-full transition-colors ${pgBtn}`}>
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                            </button>
+                          </div>
+                        );
+                      })()}
+
                       {/* Legenda COMPLETA - 3 status */}
                       <div className="flex justify-center gap-3 mb-2 text-[9px]">
                         <div className="flex items-center gap-1">
@@ -1121,9 +1159,9 @@ const ClassificacaoCarrossel = ({
                   
                   // Criar array apenas dos 3 cards de rotas (excluir DADOS GERAIS)
                   const routeCards = [
-                    { component: renderCompactRoutesChart(rotasDegradadas, "ROTAS DEGRADADAS", "red", maxNameWidth), count: rotasDegradadas.length, type: 'degradadas' },
-                    { component: renderCompactRoutesChart(rotasComGanho, "ROTAS COM GANHO", "green", maxNameWidth), count: rotasComGanho.length, type: 'ganho' },
-                    { component: renderCompactRoutesChart(rotasEstaveis, "ROTAS ESTÁVEIS", "blue", maxNameWidth), count: rotasEstaveis.length, type: 'estaveis' }
+                    { component: renderCompactRoutesChart(rotasDegradadas, "ROTAS DEGRADADAS", "red", maxNameWidth, pageResumoDegradadas, setPageResumoDegradadas), count: rotasDegradadas.length, type: 'degradadas' },
+                    { component: renderCompactRoutesChart(rotasComGanho, "ROTAS COM GANHO", "green", maxNameWidth, pageResumoComGanho, setPageResumoComGanho), count: rotasComGanho.length, type: 'ganho' },
+                    { component: renderCompactRoutesChart(rotasEstaveis, "ROTAS ESTÁVEIS", "blue", maxNameWidth, pageResumoEstaveis, setPageResumoEstaveis), count: rotasEstaveis.length, type: 'estaveis' }
                   ];
                   
                   // Ordenar por quantidade (crescente) para pegar o menor
