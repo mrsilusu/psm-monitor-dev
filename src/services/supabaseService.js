@@ -11,7 +11,6 @@ const STATIC_PSMS = ['ISISTEL', 'FIBRASOL', 'ANGLOBAL'];
 
 // ============================================
 // MAPEAR CAMPOS localStorage → Supabase
-// dep_isistel é reutilizado para PSMs dinâmicos como coluna genérica dep_psm
 // ============================================
 const mapLocalStorageToSupabase = (psmName, week, route, routeData, quarter, year, provincia, rotasTestadas, rotasValidadas) => {
   const isDynamic = !STATIC_PSMS.includes(psmName);
@@ -29,12 +28,10 @@ const mapLocalStorageToSupabase = (psmName, week, route, routeData, quarter, yea
     dep_passagem: parseInt(routeData['Dep. de Passagem de Cabo']) || 0,
     dep_licenca: parseInt(routeData['Dep. de Licença']) || 0,
     dep_cutover: parseInt(routeData['Dep. de Cutover']) || 0,
-    // Para PSMs dinâmicos, dep_isistel armazena "Fibras dependentes da [PSM]"
-    dep_isistel: isDynamic
-      ? (parseInt(routeData[`Fibras dependentes da ${psmName}`]) || 0)
-      : (parseInt(routeData['Fibras dependentes da ISISTEL']) || 0),
+    dep_isistel: isDynamic ? 0 : (parseInt(routeData['Fibras dependentes da ISISTEL']) || 0),
     dep_fibrasol: parseInt(routeData['Fibras dependentes da FIBRASOL']) || 0,
     dep_anglobal: parseInt(routeData['Fibras dependentes da ANGLOBAL']) || 0,
+    dep_generico: isDynamic ? (parseInt(routeData[`Fibras dependentes da ${psmName}`]) || 0) : 0,
     testada: rotasTestadas?.[psmName]?.[week]?.[route]?.testada === true,
     validada: rotasValidadas?.[psmName]?.[week]?.[route]?.validada === true,
   };
@@ -58,9 +55,9 @@ const mapSupabaseToLocalStorage = (supabaseData) => {
     'Fibras dependentes da FIBRASOL': supabaseData.dep_fibrasol || 0,
     'Fibras dependentes da ANGLOBAL': supabaseData.dep_anglobal || 0,
   };
-  // Reconstrói campo dinâmico para PSMs não-estáticos
+  // Reconstrói campo dinâmico usando dep_generico (coluna dedicada para PSMs não-estáticos)
   if (isDynamic && psm) {
-    result[`Fibras dependentes da ${psm}`] = supabaseData.dep_isistel || 0;
+    result[`Fibras dependentes da ${psm}`] = supabaseData.dep_generico || 0;
   }
   return result;
 };
@@ -226,9 +223,12 @@ export const salvarTudoNoSupabase = async (allData, quarter, year, routesToProvi
             // dep_isistel reutilizado para PSMs dinâmicos como coluna genérica dep_psm
             dep_isistel: STATIC_PSMS.includes(psmName)
               ? parseOrZero(routeData['Fibras dependentes da ISISTEL'])
-              : parseOrZero(routeData[`Fibras dependentes da ${psmName}`]),
+              : 0,
             dep_fibrasol: parseOrZero(routeData['Fibras dependentes da FIBRASOL']),
             dep_anglobal: parseOrZero(routeData['Fibras dependentes da ANGLOBAL']),
+            dep_generico: !STATIC_PSMS.includes(psmName)
+              ? parseOrZero(routeData[`Fibras dependentes da ${psmName}`])
+              : 0,
           };
           
           // Verificar se tem algum valor diferente de zero
