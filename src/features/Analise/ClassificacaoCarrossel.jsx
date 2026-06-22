@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin } from 'lucide-react';
 import { ROUTES_BY_PSM as STATIC_ROUTES_BY_PSM } from '../../config/routeConfig';
 import { QUARTER_CONFIG } from '../../config/quarterConfig';
@@ -36,6 +36,15 @@ const ClassificacaoCarrossel = ({
   const [currentGraphClassificacao, setCurrentGraphClassificacao] = useState(0);
   const [tooltipData, setTooltipData] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [pageDegradadas, setPageDegradadas] = useState(0);
+  const [pageComGanho, setPageComGanho] = useState(0);
+  const [pageEstaveis, setPageEstaveis] = useState(0);
+
+  useEffect(() => {
+    setPageDegradadas(0);
+    setPageComGanho(0);
+    setPageEstaveis(0);
+  }, [selectedOperator, selectedProvince, selectedQuarter, selectedWeek]);
 
   const goToNextGraphClassificacao = () => setCurrentGraphClassificacao((prev) => (prev + 1) % 3);
   const goToPrevGraphClassificacao = () => setCurrentGraphClassificacao((prev) => (prev - 1 + 3) % 3);
@@ -576,8 +585,12 @@ const ClassificacaoCarrossel = ({
                 };
                 
                 // Função para renderizar um gráfico
-                const renderChart = (routes, title, borderColor, bgColor, dotColor) => {
-                  if (routes.length === 0) {
+                const renderChart = (allRoutes, title, borderColor, bgColor, dotColor, currentPage = 0, setCurrentPage = null) => {
+                  const ROUTES_PER_PAGE = 15;
+                  const totalPages = Math.ceil(allRoutes.length / ROUTES_PER_PAGE);
+                  const routes = allRoutes.slice(currentPage * ROUTES_PER_PAGE, (currentPage + 1) * ROUTES_PER_PAGE);
+
+                  if (allRoutes.length === 0) {
                     return (
                       <div className={bgColor === 'red' ? 'bg-red-50 rounded-lg border-2 border-red-200 p-8 text-center' : 
                                      bgColor === 'green' ? 'bg-green-50 rounded-lg border-2 border-green-200 p-8 text-center' : 
@@ -674,7 +687,7 @@ const ClassificacaoCarrossel = ({
                       
                       <div className="text-center mb-3">
                         <p className="text-xs text-gray-600">
-                          Total de rotas: <span className={totalClass}>{routes.length}</span>
+                          Total de rotas: <span className={totalClass}>{allRoutes.length}</span>
                         </p>
                       </div>
                       
@@ -699,6 +712,33 @@ const ClassificacaoCarrossel = ({
                         </div>
                       </div>
                       
+                      {/* Paginação interna por categoria */}
+                      {totalPages > 1 && setCurrentPage && (
+                        <div className="flex items-center justify-center gap-4 mb-3">
+                          <button
+                            onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+                            disabled={currentPage === 0}
+                            className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition-colors"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+                          <span className="text-xs font-semibold text-gray-600">
+                            Página {currentPage + 1} / {totalPages}
+                          </span>
+                          <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
+                            disabled={currentPage === totalPages - 1}
+                            className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition-colors"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
+
                       {/* SEM overflow-x-auto - Tudo cabe na largura fixa */}
                       <div className="flex justify-center">
                         <svg width={svgWidth} height={svgHeight} viewBox={`0 0 ${svgWidth} ${svgHeight}`} preserveAspectRatio="xMidYMid meet">
@@ -1115,17 +1155,17 @@ const ClassificacaoCarrossel = ({
                       >
                         {/* Slide 1: ROTAS DEGRADADAS */}
                         <div className="w-full flex-shrink-0 px-4">
-                          {renderChart(rotasDegradadas, "ROTAS DEGRADADAS", "red", "red")}
+                          {renderChart(rotasDegradadas, "ROTAS DEGRADADAS", "red", "red", null, pageDegradadas, setPageDegradadas)}
                         </div>
-                        
+
                         {/* Slide 2: ROTAS COM GANHO */}
                         <div className="w-full flex-shrink-0 px-4">
-                          {renderChart(rotasComGanho, "ROTAS COM GANHO", "green", "green")}
+                          {renderChart(rotasComGanho, "ROTAS COM GANHO", "green", "green", null, pageComGanho, setPageComGanho)}
                         </div>
-                        
+
                         {/* Slide 3: ROTAS ESTÁVEIS */}
                         <div className="w-full flex-shrink-0 px-4">
-                          {renderChart(rotasEstaveis, "ROTAS ESTÁVEIS", "blue", "blue")}
+                          {renderChart(rotasEstaveis, "ROTAS ESTÁVEIS", "blue", "blue", null, pageEstaveis, setPageEstaveis)}
                         </div>
                       </div>
                     </div>
