@@ -22,6 +22,7 @@ export const usePersistence = ({
   setSaveStatus,
   setLastSaveTime,
   routeToProvince = STATIC_ROUTE_TO_PROVINCE,
+  routesByPsm = null,
   user = null,
 }) => {
   const saveTimerRef = useRef(null);
@@ -126,7 +127,8 @@ export const usePersistence = ({
         routeToProvinceRef.current,
         rotasTestadas,
         rotasValidadas,
-        user.id
+        user.id,
+        routesByPsm
       );
 
       if (resultado.success) {

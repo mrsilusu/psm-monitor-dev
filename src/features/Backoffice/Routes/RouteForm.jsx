@@ -20,7 +20,7 @@ const RouteForm = ({
   const isEdit = !!route;
 
   const [form, setForm] = useState({
-    psm: selectedPsm || allPsms[0] || 'FIBRASOL',
+    psm: selectedPsm || '',
     route_name: '',
     province: '',
     tipo_de_rede: 'Backbone',

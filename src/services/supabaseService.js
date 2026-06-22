@@ -68,7 +68,7 @@ const mapSupabaseToLocalStorage = (supabaseData) => {
 // ============================================
 // SALVAR TODOS OS DADOS (OTIMIZADO - PRESERVA TESTADA/VALIDADA)
 // ============================================
-export const salvarTudoNoSupabase = async (allData, quarter, year, routesToProvinceMap, rotasTestadas, rotasValidadas, userIdParam = null) => {
+export const salvarTudoNoSupabase = async (allData, quarter, year, routesToProvinceMap, rotasTestadas, rotasValidadas, userIdParam = null, routesByPsm = null) => {
   try {
     log('🚀 Iniciando salvamento OTIMIZADO no Supabase...');
 
@@ -118,8 +118,14 @@ export const salvarTudoNoSupabase = async (allData, quarter, year, routesToProvi
     // Adicionar rotas de allData — todos os PSMs, estáticos e dinâmicos
     for (const psmName of Object.keys(allData)) {
       if (allData[psmName]) {
+        const rotasPermitidas = routesByPsm ? (routesByPsm[psmName] || []) : null;
         for (const week in allData[psmName]) {
           for (const route in allData[psmName][week]) {
+            // Validar: a rota deve pertencer ao PSM
+            if (rotasPermitidas && !rotasPermitidas.includes(route)) {
+              log(`⚠️ [SAVE] Rota '${route}' ignorada — não pertence ao PSM '${psmName}'`);
+              continue;
+            }
             const chave = `${psmName}|${week}|${route}`;
             rotasParaProcessar.set(chave, { psm: psmName, week, route });
           }
@@ -131,8 +137,13 @@ export const salvarTudoNoSupabase = async (allData, quarter, year, routesToProvi
     if (rotasTestadas) {
       const testadosDoAno = rotasTestadas[anoAtual] || {};
       for (const psmName in testadosDoAno) {
+        const rotasPermitidas = routesByPsm ? (routesByPsm[psmName] || []) : null;
         for (const week in testadosDoAno[psmName]) {
           for (const route in testadosDoAno[psmName][week]) {
+            if (rotasPermitidas && !rotasPermitidas.includes(route)) {
+              log(`⚠️ [TESTADA] Rota '${route}' ignorada — não pertence ao PSM '${psmName}'`);
+              continue;
+            }
             if (testadosDoAno[psmName][week][route]?.testada === true) {
               const chave = `${psmName}|${week}|${route}`;
               if (!rotasParaProcessar.has(chave)) {
@@ -149,8 +160,13 @@ export const salvarTudoNoSupabase = async (allData, quarter, year, routesToProvi
     if (rotasValidadas) {
       const validadasDoAno = rotasValidadas[anoAtual] || {};
       for (const psmName in validadasDoAno) {
+        const rotasPermitidas = routesByPsm ? (routesByPsm[psmName] || []) : null;
         for (const week in validadasDoAno[psmName]) {
           for (const route in validadasDoAno[psmName][week]) {
+            if (rotasPermitidas && !rotasPermitidas.includes(route)) {
+              log(`⚠️ [VALIDADA] Rota '${route}' ignorada — não pertence ao PSM '${psmName}'`);
+              continue;
+            }
             if (validadasDoAno[psmName][week][route]?.validada === true) {
               const chave = `${psmName}|${week}|${route}`;
               if (!rotasParaProcessar.has(chave)) {

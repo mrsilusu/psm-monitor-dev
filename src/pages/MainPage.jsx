@@ -96,6 +96,7 @@ const MainPage = () => {
     setData, setJustificativas, setRotasTestadas, setRotasValidadas,
     setDistribuicaoReparacoes, setSaveStatus, setLastSaveTime,
     routeToProvince,
+    routesByPsm,
     user,
   });
 
